@@ -36,7 +36,7 @@
 
 # Noticed that the TODO request asks to preserve the filter status. So, refactor to use URL params approach.
 
-# Third, work on UI
+# Implemented the optismistic upvotes functionality, rollback if error occurs.
 
 TODO:
 

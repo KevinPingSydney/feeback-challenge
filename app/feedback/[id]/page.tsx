@@ -1,3 +1,5 @@
+'use client';
+
 import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,15 +10,39 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { getFeedbackById } from '@/lib/data';
+import { fetchFeedbackById } from '@/lib/api-client';
 import { UpvoteButton } from '@/components/feedback/upvote-button';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import type { Feedback } from '@/types/feedback';
 
-export default async function FeedbackDetailPage({
+export default function FeedbackDetailPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const feedback = await getFeedbackById(params.id);
+  const searchParams = useSearchParams();
+  const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadFeedback() {
+      try {
+        const data = await fetchFeedbackById(params.id);
+        setFeedback(data);
+      } catch (error) {
+        console.error('Error loading feedback:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadFeedback();
+  }, [params.id]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   if (!feedback) {
     notFound();
@@ -26,7 +52,7 @@ export default async function FeedbackDetailPage({
     <div className="container max-w-3xl py-8">
       <div className="mb-6">
         <Button variant="outline" asChild>
-          <Link href="/">
+          <Link href={`/?${searchParams.toString()}`}>
             <span aria-hidden="true">&larr;</span> Back to List
           </Link>
         </Button>
