@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { feedbackSchema } from '@/lib/validation';
+import { feedbackSchema, validateRequest } from '@/lib/validation';
 import { FeedbackStatusEnum } from '@/types/feedback';
 
 export async function GET(request: NextRequest) {
@@ -39,25 +39,15 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Validate request body using Zod
-    const validationResult = feedbackSchema.safeParse(body);
-
-    if (!validationResult.success) {
-      return NextResponse.json(
-        {
-          error: 'Validation failed',
-          details: validationResult.error.errors,
-        },
-        { status: 400 }
-      );
+    const validation = validateRequest(feedbackSchema, body);
+    if (!validation.success) {
+      return validation.response;
     }
 
     const feedback = await db.feedback.create({
       data: {
-        title: validationResult.data.title,
-        description: validationResult.data.description,
-        category: validationResult.data.category,
-        status: validationResult.data.status || 'Open',
+        ...validation.data,
+        status: validation.data.status || 'Open',
         upvotes: 0,
       },
     });
@@ -66,7 +56,6 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating feedback:', error);
 
-    // Handle different types of errors
     if (error instanceof Error) {
       if (error.message.includes('not found')) {
         return NextResponse.json(

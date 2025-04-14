@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { FeedbackCategoryEnum, FeedbackStatusEnum } from '@/types/feedback';
+import { NextResponse } from 'next/server';
 
 // DONE: Implement Zod schemas for feedback validation
 // - Create schemas for feedback creation and updates
@@ -37,3 +38,27 @@ export type FeedbackUpdateValues = z.infer<typeof feedbackUpdateSchema>;
 // TODO: Create a schema for feedback updates
 // - Make all fields optional
 // - Reuse validation rules from the main schema
+
+export function validateRequest<T extends z.ZodType>(
+  schema: T,
+  data: unknown
+):
+  | { success: true; data: z.infer<T> }
+  | { success: false; response: NextResponse } {
+  const validationResult = schema.safeParse(data);
+
+  if (!validationResult.success) {
+    return {
+      success: false,
+      response: NextResponse.json(
+        {
+          error: 'Validation failed',
+          details: validationResult.error.errors,
+        },
+        { status: 400 }
+      ),
+    };
+  }
+
+  return { success: true, data: validationResult.data };
+}

@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { feedbackUpdateSchema, validateRequest } from '@/lib/validation';
 
 export async function GET(
   request: NextRequest,
@@ -34,29 +35,26 @@ export async function PUT(
   try {
     const body = await request.json();
 
-    // TODO: Validate request body using Zod
-    // - Create a schema for feedback updates
-    // - Validate the request body against the schema
-    // - Return validation errors if any
+    const validation = validateRequest(feedbackUpdateSchema, body);
+    if (!validation.success) {
+      return validation.response;
+    }
 
     const feedback = await db.feedback.update({
       where: { id: params.id },
-      data: {
-        title: body.title,
-        description: body.description,
-        category: body.category,
-        status: body.status,
-      },
+      data: validation.data,
     });
 
     return NextResponse.json(feedback);
   } catch (error) {
     console.error('Error updating feedback:', error);
 
-    // TODO: Implement proper error handling
-    // - Check for not found errors
-    // - Differentiate between validation errors and server errors
-    // - Return appropriate status codes and error messages
+    if (error instanceof Error && error.message.includes('not found')) {
+      return NextResponse.json(
+        { error: 'Feedback not found' },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json(
       { error: 'Failed to update feedback' },
