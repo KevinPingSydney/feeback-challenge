@@ -3,6 +3,8 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import type { FeedbackStatus } from '@/types/feedback';
 
+// DONE: The CONTEXT is not used in this project. We use the URL params instead.
+
 // TODO: Implement feedback context
 // - Create a context for feedback state
 // - Provide functions for filtering and sorting

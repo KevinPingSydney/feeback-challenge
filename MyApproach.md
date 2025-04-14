@@ -38,6 +38,8 @@
 
 # Implemented the optismistic upvotes functionality, rollback if error occurs.
 
+# Fixed Feedback item details page to preserve the status filter while navigating back to feedback list page
+
 TODO:
 
 - Testing

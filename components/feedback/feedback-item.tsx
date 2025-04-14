@@ -20,7 +20,7 @@ type FeedbackItemProps = {
 export default function FeedbackItem({ feedback }: FeedbackItemProps) {
   const searchParams = useSearchParams();
 
-  // TODO: Implement upvote functionality
+  // DONE: Implement upvote functionality
   // - Create a function to handle upvoting
   // - Use SWR or React Query for data fetching and mutation
   // - Implement optimistic UI updates
