@@ -1,15 +1,27 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { feedbackSchema } from '@/lib/validation';
+import { FeedbackStatusEnum } from '@/types/feedback';
 
-export async function GET() {
-  // TODO: Implement filtering by status
-  // - Extract status filter from query params
-  // - Filter feedback items based on status
-  // - Return filtered feedback items
-
+export async function GET(request: NextRequest) {
   try {
+    const searchParams = request.nextUrl.searchParams;
+    const status = searchParams.get('status');
+
+    // Validate status against allowed values
+    const validStatus =
+      status &&
+      Object.values(FeedbackStatusEnum).includes(
+        status as (typeof FeedbackStatusEnum)[keyof typeof FeedbackStatusEnum]
+      )
+        ? (status as Exclude<
+            (typeof FeedbackStatusEnum)[keyof typeof FeedbackStatusEnum],
+            'All'
+          >)
+        : undefined;
+
     const feedbackItems = await db.feedback.findMany({
+      where: validStatus ? { status: validStatus } : undefined,
       orderBy: { createdAt: 'desc' },
     });
 

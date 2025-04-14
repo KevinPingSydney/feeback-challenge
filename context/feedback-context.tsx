@@ -18,6 +18,14 @@ const FeedbackContext = createContext<FeedbackContextType | undefined>(
   undefined
 );
 
+export function useFeedback() {
+  const context = useContext(FeedbackContext);
+  if (context === undefined) {
+    throw new Error('useFeedback must be used within a FeedbackProvider');
+  }
+  return context;
+}
+
 export function FeedbackProvider({ children }: { children: ReactNode }) {
   const [statusFilter, setStatusFilter] = useState<FeedbackStatus>('All');
 
@@ -37,16 +45,4 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
       {children}
     </FeedbackContext.Provider>
   );
-}
-
-export function useFeedbackContext() {
-  const context = useContext(FeedbackContext);
-
-  if (context === undefined) {
-    throw new Error(
-      'useFeedbackContext must be used within a FeedbackProvider'
-    );
-  }
-
-  return context;
 }

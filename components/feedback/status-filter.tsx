@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import type { FeedbackStatus } from '@/types/feedback';
+import { useFeedback } from '@/context/feedback-context';
 
 // TODO: Implement status filter component
 // - Create a component that allows filtering by status
@@ -10,11 +11,7 @@ import type { FeedbackStatus } from '@/types/feedback';
 // - Make it visually clear which filter is active
 
 export default function StatusFilter() {
-  // TODO: Implement filter state management
-  // - Track the current filter state
-  // - Update the URL or context/store when filter changes
-  // - Sync with URL params if using URL-based filtering
-
+  const { statusFilter, setStatusFilter } = useFeedback();
   const statuses: FeedbackStatus[] = ['All', 'Open', 'In Progress', 'Closed'];
 
   return (
@@ -22,9 +19,8 @@ export default function StatusFilter() {
       {statuses.map((status) => (
         <Button
           key={status}
-          variant="outline"
-          // TODO: Set active state based on current filter
-          // TODO: Implement click handler to update filter
+          variant={statusFilter === status ? 'default' : 'outline'}
+          onClick={() => setStatusFilter(status)}
         >
           {status}
         </Button>

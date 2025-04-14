@@ -1,13 +1,43 @@
-import { getFeedback } from '@/lib/data';
+'use client';
+
+import { useEffect, useState } from 'react';
 import FeedbackItem from './feedback-item';
+import { useFeedback } from '@/context/feedback-context';
+import { fetchFeedback } from '@/lib/api-client';
+import type { Feedback } from '@/types/feedback';
+import { FeedbackListSkeleton } from '@/components/skeletons/feedback-skeletons';
 
 // TODO: Implement filtering by status
 // - Accept a status filter parameter
 // - Filter the feedback items based on the status
 // - Ensure the component re-renders when the filter changes
 
-export default async function FeedbackList() {
-  const feedbackItems = await getFeedback();
+export default function FeedbackList() {
+  const { statusFilter } = useFeedback();
+  const [feedbackItems, setFeedbackItems] = useState<Feedback[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadFeedback() {
+      setIsLoading(true);
+      try {
+        const items = await fetchFeedback(
+          statusFilter === 'All' ? undefined : statusFilter
+        );
+        setFeedbackItems(items);
+      } catch (error) {
+        console.error('Error loading feedback:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadFeedback();
+  }, [statusFilter]);
+
+  if (isLoading) {
+    return <FeedbackListSkeleton />;
+  }
 
   if (feedbackItems.length === 0) {
     return (
@@ -22,7 +52,7 @@ export default async function FeedbackList() {
 
   return (
     <div className="space-y-4">
-      {feedbackItems.feedback.map((item) => (
+      {feedbackItems.map((item) => (
         <FeedbackItem key={item.id} feedback={item} />
       ))}
     </div>
