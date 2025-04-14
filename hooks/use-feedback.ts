@@ -2,7 +2,6 @@
 
 import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSWRConfig } from 'swr';
 import { upvoteFeedback } from '@/lib/api-client';
 import type { Feedback } from '@/types/feedback';
 
@@ -14,25 +13,19 @@ import type { Feedback } from '@/types/feedback';
 
 export function useFeedback() {
   const router = useRouter();
-  const { mutate } = useSWRConfig();
 
   const handleUpvote = useCallback(
     async (feedback: Feedback) => {
-      // TODO: Implement optimistic update
-      // - Update the local data optimistically
-      // - Send the request to the server
-      // - Handle success and error cases
-      // - Roll back on error
-
       try {
         await upvoteFeedback(feedback.id);
+        // Refresh the page to get the latest data
         router.refresh();
       } catch (error) {
         console.error('Failed to upvote feedback:', error);
-        // TODO: Show error notification
+        throw error; // Re-throw to let the component handle the error
       }
     },
-    [router, mutate]
+    [router]
   );
 
   return {

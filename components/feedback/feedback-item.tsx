@@ -8,10 +8,9 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import type { Feedback } from '@/types/feedback';
 import Link from 'next/link';
-import { ChevronUp } from 'lucide-react';
+import { UpvoteButton } from './upvote-button';
 
 type FeedbackItemProps = {
   feedback: Feedback;
@@ -51,15 +50,7 @@ export default function FeedbackItem({ feedback }: FeedbackItemProps) {
         <p className="line-clamp-2">{feedback.description}</p>
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-1"
-          // TODO: Implement upvote handler
-        >
-          <ChevronUp className="h-4 w-4" />
-          <span>{feedback.upvotes}</span>
-        </Button>
+        <UpvoteButton feedback={feedback} />
         <span className="text-sm text-muted-foreground">
           {new Date(feedback.createdAt).toLocaleDateString()}
         </span>

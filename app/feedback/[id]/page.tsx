@@ -9,6 +9,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { getFeedbackById } from '@/lib/data';
+import { UpvoteButton } from '@/components/feedback/upvote-button';
 
 export default async function FeedbackDetailPage({
   params,
@@ -51,13 +52,9 @@ export default async function FeedbackDetailPage({
         </CardHeader>
         <CardContent>
           <p className="whitespace-pre-wrap">{feedback.description}</p>
-
-          {/* 
-            TODO: Implement upvote functionality
-            - Create an UpvoteButton component
-            - Implement optimistic UI updates
-            - Handle error states and rollbacks
-          */}
+          <div className="mt-4">
+            <UpvoteButton feedback={feedback} />
+          </div>
         </CardContent>
         <CardFooter>
           <p className="text-sm text-muted-foreground">
