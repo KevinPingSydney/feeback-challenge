@@ -10,11 +10,9 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { fetchFeedbackById } from '@/lib/api-client';
 import { UpvoteButton } from '@/components/feedback/upvote-button';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import type { Feedback } from '@/types/feedback';
+import { useFeedback } from '@/hooks/use-feedback';
 
 export default function FeedbackDetailPage({
   params,
@@ -22,29 +20,13 @@ export default function FeedbackDetailPage({
   params: { id: string };
 }) {
   const searchParams = useSearchParams();
-  const [feedback, setFeedback] = useState<Feedback | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadFeedback() {
-      try {
-        const data = await fetchFeedbackById(params.id);
-        setFeedback(data);
-      } catch (error) {
-        console.error('Error loading feedback:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadFeedback();
-  }, [params.id]);
+  const { feedback, isLoading, error } = useFeedback(params.id);
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  if (!feedback) {
+  if (error || !feedback) {
     notFound();
   }
 

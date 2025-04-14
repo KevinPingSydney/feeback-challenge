@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronUp } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
@@ -11,29 +11,29 @@ interface UpvoteButtonProps {
   feedback: Feedback;
 }
 
-export function UpvoteButton({ feedback }: UpvoteButtonProps) {
-  const [isUpvoting, setIsUpvoting] = useState(false);
-  const [optimisticUpvotes, setOptimisticUpvotes] = useState(feedback.upvotes);
+function UpvoteButtonComponent({ feedback }: UpvoteButtonProps) {
   const { toast } = useToast();
-  const { upvote } = useFeedback();
+  const { upvote, isUpvoting } = useFeedback(feedback.id);
+  const [optimisticUpvotes, setOptimisticUpvotes] = useState(feedback.upvotes);
+
+  // Update local state when feedback prop changes
+  if (optimisticUpvotes !== feedback.upvotes) {
+    setOptimisticUpvotes(feedback.upvotes);
+  }
 
   const handleUpvote = async () => {
     try {
-      setIsUpvoting(true);
-      // Optimistic update
+      // Update local state immediately
       setOptimisticUpvotes((prev) => prev + 1);
-
       await upvote(feedback);
     } catch (error) {
-      // Rollback optimistic update
+      // Rollback on error
       setOptimisticUpvotes(feedback.upvotes);
       toast({
         title: 'Error',
         description: 'Failed to upvote feedback. Please try again.',
         variant: 'destructive',
       });
-    } finally {
-      setIsUpvoting(false);
     }
   };
 
@@ -51,3 +51,6 @@ export function UpvoteButton({ feedback }: UpvoteButtonProps) {
     </Button>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export const UpvoteButton = memo(UpvoteButtonComponent);

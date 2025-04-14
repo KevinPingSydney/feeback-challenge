@@ -1,11 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import FeedbackItem from './feedback-item';
 import { useSearchParams } from 'next/navigation';
-import { fetchFeedback } from '@/lib/api-client';
-import type { Feedback } from '@/types/feedback';
 import { FeedbackListSkeleton } from '@/components/skeletons/feedback-skeletons';
+import { useFeedbackList } from '@/hooks/use-feedback';
 
 // DONE: Implement filtering by status
 // - Accept a status filter parameter
@@ -15,32 +13,26 @@ import { FeedbackListSkeleton } from '@/components/skeletons/feedback-skeletons'
 export default function FeedbackList() {
   const searchParams = useSearchParams();
   const status = searchParams.get('status') || 'All';
-  const [feedbackItems, setFeedbackItems] = useState<Feedback[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadFeedback() {
-      setIsLoading(true);
-      try {
-        const items = await fetchFeedback(
-          status === 'All' ? undefined : status
-        );
-        setFeedbackItems(items);
-      } catch (error) {
-        console.error('Error loading feedback:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadFeedback();
-  }, [status]);
+  const { feedbackList, isLoading, error } = useFeedbackList(
+    status === 'All' ? undefined : status
+  );
 
   if (isLoading) {
     return <FeedbackListSkeleton />;
   }
 
-  if (feedbackItems.length === 0) {
+  if (error) {
+    return (
+      <div className="text-center py-10">
+        <h3 className="text-lg font-medium text-destructive">
+          Error loading feedback
+        </h3>
+        <p className="text-muted-foreground">Please try again later.</p>
+      </div>
+    );
+  }
+
+  if (!feedbackList || feedbackList.length === 0) {
     return (
       <div className="text-center py-10">
         <h3 className="text-lg font-medium">No feedback yet</h3>
@@ -53,7 +45,7 @@ export default function FeedbackList() {
 
   return (
     <div className="space-y-4">
-      {feedbackItems.map((item) => (
+      {feedbackList.map((item) => (
         <FeedbackItem key={item.id} feedback={item} />
       ))}
     </div>

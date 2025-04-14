@@ -35,7 +35,7 @@ export const feedbackUpdateSchema = feedbackSchema.partial();
 export type FeedbackFormValues = z.infer<typeof feedbackSchema>;
 export type FeedbackUpdateValues = z.infer<typeof feedbackUpdateSchema>;
 
-// TODO: Create a schema for feedback updates
+// DONE: Create a schema for feedback updates
 // - Make all fields optional
 // - Reuse validation rules from the main schema
 
