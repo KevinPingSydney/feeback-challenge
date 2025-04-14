@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import FeedbackItem from './feedback-item';
-import { useFeedback } from '@/context/feedback-context';
+import { useSearchParams } from 'next/navigation';
 import { fetchFeedback } from '@/lib/api-client';
 import type { Feedback } from '@/types/feedback';
 import { FeedbackListSkeleton } from '@/components/skeletons/feedback-skeletons';
@@ -13,7 +13,8 @@ import { FeedbackListSkeleton } from '@/components/skeletons/feedback-skeletons'
 // - Ensure the component re-renders when the filter changes
 
 export default function FeedbackList() {
-  const { statusFilter } = useFeedback();
+  const searchParams = useSearchParams();
+  const status = searchParams.get('status') || 'All';
   const [feedbackItems, setFeedbackItems] = useState<Feedback[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -22,7 +23,7 @@ export default function FeedbackList() {
       setIsLoading(true);
       try {
         const items = await fetchFeedback(
-          statusFilter === 'All' ? undefined : statusFilter
+          status === 'All' ? undefined : status
         );
         setFeedbackItems(items);
       } catch (error) {
@@ -33,7 +34,7 @@ export default function FeedbackList() {
     }
 
     loadFeedback();
-  }, [statusFilter]);
+  }, [status]);
 
   if (isLoading) {
     return <FeedbackListSkeleton />;

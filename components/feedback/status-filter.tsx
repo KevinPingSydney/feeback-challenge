@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import type { FeedbackStatus } from '@/types/feedback';
-import { useFeedback } from '@/context/feedback-context';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 // TODO: Implement status filter component
 // - Create a component that allows filtering by status
@@ -11,16 +11,28 @@ import { useFeedback } from '@/context/feedback-context';
 // - Make it visually clear which filter is active
 
 export default function StatusFilter() {
-  const { statusFilter, setStatusFilter } = useFeedback();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentStatus = searchParams.get('status') || 'All';
   const statuses: FeedbackStatus[] = ['All', 'Open', 'In Progress', 'Closed'];
+
+  const handleStatusChange = (status: FeedbackStatus) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (status === 'All') {
+      params.delete('status');
+    } else {
+      params.set('status', status);
+    }
+    router.push(`/?${params.toString()}`);
+  };
 
   return (
     <div className="flex flex-wrap gap-2 mb-6">
       {statuses.map((status) => (
         <Button
           key={status}
-          variant={statusFilter === status ? 'default' : 'outline'}
-          onClick={() => setStatusFilter(status)}
+          variant={currentStatus === status ? 'default' : 'outline'}
+          onClick={() => handleStatusChange(status)}
         >
           {status}
         </Button>

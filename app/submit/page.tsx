@@ -32,7 +32,7 @@ import {
 } from '@/components/ui/select';
 import { useState } from 'react';
 import { createFeedback } from '@/lib/api-client';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
 
 const feedbackFormSchema = z.object({
@@ -60,30 +60,40 @@ type FeedbackFormValues = z.infer<typeof feedbackFormSchema>;
 export default function SubmitFeedbackPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  console.log('*****searchParams=', searchParams.size);
+
   const { toast } = useToast();
+
   const form = useForm<FeedbackFormValues>({
     resolver: zodResolver(feedbackFormSchema),
     defaultValues: {
-      title: '',
-      description: '',
-      category: FeedbackCategoryEnum.Feature,
-      status: FeedbackStatusEnum.Open,
+      status: 'Open',
     },
   });
 
   const onSubmit = async (data: FeedbackFormValues) => {
+    setIsSubmitting(true);
     try {
-      setIsSubmitting(true);
-
       await createFeedback(data);
-
-      router.push('/'); // avoid page refresh and is faster, and maintain the same app state
+      toast({
+        title: 'Success',
+        description: 'Your feedback has been submitted successfully.',
+      });
+      // Preserve filter parameters when redirecting back
+      const status = searchParams.get('status');
+      const params = new URLSearchParams();
+      if (status) {
+        params.set('status', status);
+      }
+      router.push(`/?${params.toString()}`);
     } catch (error) {
       console.error('Error submitting feedback:', error);
       toast({
-        variant: 'destructive',
         title: 'Error',
-        description: 'Failed to submit feedback. Please try again later.',
+        description: 'Failed to submit feedback. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsSubmitting(false);
@@ -91,7 +101,7 @@ export default function SubmitFeedbackPage() {
   };
 
   return (
-    <div className="container max-w-2xl py-8">
+    <div className="container max-w-3xl py-8">
       <Card>
         <CardHeader>
           <CardTitle>Submit Feedback</CardTitle>
@@ -125,7 +135,7 @@ export default function SubmitFeedbackPage() {
                     <FormLabel>Description</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Describe your feedback in detail"
+                        placeholder="Enter feedback description"
                         className="min-h-[100px]"
                         {...field}
                       />
@@ -197,7 +207,7 @@ export default function SubmitFeedbackPage() {
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button variant="outline" asChild>
-            <Link href="/">Cancel</Link>
+            <Link href={`/?${searchParams.toString()}`}>Cancel</Link>
           </Button>
           <Button type="submit" form="feedback-form" disabled={isSubmitting}>
             {isSubmitting ? 'Submitting...' : 'Submit Feedback'}

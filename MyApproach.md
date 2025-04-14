@@ -32,6 +32,10 @@
     # add the validation schema, also reuse the zod validation schema
     ## Tested the validation positive and negative scenarios on Postman. (Jest testing is out of scope for this challenge)
 
+# Implemented the status filter using the context approach.
+
+# Noticed that the TODO request asks to preserve the filter status. So, refactor to use URL params approach.
+
 # Third, work on UI
 
 TODO:
