@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { FeedbackCategoryEnum, FeedbackStatusEnum } from '@/types/feedback';
 
-// TODO: Implement Zod schemas for feedback validation
+// DONE: Implement Zod schemas for feedback validation
 // - Create schemas for feedback creation and updates
 // - Add validation rules for each field
 // - Export the schemas for use in API routes and forms

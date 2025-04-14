@@ -62,8 +62,6 @@ export default function SubmitFeedbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  console.log('*****searchParams=', searchParams.size);
-
   const { toast } = useToast();
 
   const form = useForm<FeedbackFormValues>({
@@ -77,10 +75,12 @@ export default function SubmitFeedbackPage() {
     setIsSubmitting(true);
     try {
       await createFeedback(data);
+
       toast({
         title: 'Success',
         description: 'Your feedback has been submitted successfully.',
       });
+
       // Preserve filter parameters when redirecting back
       const status = searchParams.get('status');
       const params = new URLSearchParams();
