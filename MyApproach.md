@@ -29,6 +29,9 @@
     - we need to implement the data persistence layer.
     - Implemented the data.ts and fix the error introduced in the corresponding UI feedback-list.tsx
 
+    # add the validation schema, also reuse the zod validation schema
+    ## Tested the validation positive and negative scenarios on Postman. (Jest testing is out of scope for this challenge)
+
 # Third, work on UI
 
 TODO:
@@ -37,3 +40,4 @@ TODO:
 - Clean up logging
 - All TODOs
 - Test sorting, pagination
+- change the route.ts to do validation and error handling

@@ -1,10 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-
-// TODO: Implement feedback schema validation
-// - Create a Zod schema for feedback validation
-// - Validate request body against the schema
-// - Return appropriate error responses for invalid data
+import { feedbackSchema } from '@/lib/validation';
 
 export async function GET() {
   // TODO: Implement filtering by status
@@ -31,17 +27,25 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // TODO: Validate request body using Zod
-    // - Create a schema for feedback submission
-    // - Validate the request body against the schema
-    // - Return validation errors if any
+    // Validate request body using Zod
+    const validationResult = feedbackSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      return NextResponse.json(
+        {
+          error: 'Validation failed',
+          details: validationResult.error.errors,
+        },
+        { status: 400 }
+      );
+    }
 
     const feedback = await db.feedback.create({
       data: {
-        title: body.title,
-        description: body.description,
-        category: body.category,
-        status: body.status || 'Open',
+        title: validationResult.data.title,
+        description: validationResult.data.description,
+        category: validationResult.data.category,
+        status: validationResult.data.status || 'Open',
         upvotes: 0,
       },
     });
@@ -50,9 +54,15 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating feedback:', error);
 
-    // TODO: Implement proper error handling
-    // - Differentiate between validation errors and server errors
-    // - Return appropriate status codes and error messages
+    // Handle different types of errors
+    if (error instanceof Error) {
+      if (error.message.includes('not found')) {
+        return NextResponse.json(
+          { error: 'Resource not found' },
+          { status: 404 }
+        );
+      }
+    }
 
     return NextResponse.json(
       { error: 'Failed to create feedback' },
