@@ -3,13 +3,25 @@
 // - Use utility types where appropriate
 // - Consider using discriminated unions for different feedback states
 
-export type FeedbackStatus = 'All' | 'Open' | 'In Progress' | 'Closed';
+export const FeedbackStatusEnum = {
+  All: 'All',
+  Open: 'Open',
+  InProgress: 'In Progress',
+  Closed: 'Closed',
+} as const;
+
+export const FeedbackCategoryEnum = {
+  Bug: 'Bug',
+  Feature: 'Feature',
+  Improvement: 'Improvement',
+  Documentation: 'Documentation',
+  Other: 'Other',
+} as const;
+
+export type FeedbackStatus =
+  (typeof FeedbackStatusEnum)[keyof typeof FeedbackStatusEnum];
 export type FeedbackCategory =
-  | 'Bug'
-  | 'Feature'
-  | 'Improvement'
-  | 'Documentation'
-  | 'Other';
+  (typeof FeedbackCategoryEnum)[keyof typeof FeedbackCategoryEnum];
 
 export interface Feedback {
   id: string;

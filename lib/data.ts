@@ -1,19 +1,59 @@
 import type { Feedback } from '@/types/feedback';
 import { db } from './db';
 
-// TODO: Implement data fetching functions
-// - Add filtering capabilities
+// DONE: Implement data fetching functions
+// - Add status filtering capabilities
 // - Add sorting options
 // - Add pagination support (optional)
 
-export async function getFeedback(): Promise<Feedback[]> {
+export interface GetFeedbackOptions {
+  status?: Feedback['status'];
+  sortBy?: keyof Feedback;
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  pageSize?: number;
+}
+
+export async function getFeedback(options: GetFeedbackOptions = {}): Promise<{
+  feedback: Feedback[];
+  total: number;
+  page: number;
+  pageSize: number;
+}> {
+  const {
+    status,
+    sortBy = 'createdAt',
+    sortOrder = 'desc',
+    page = 1,
+    pageSize = 10,
+  } = options;
+
   try {
-    return await db.feedback.findMany({
-      orderBy: { createdAt: 'desc' },
+    // First get all feedback with filtering and sorting
+    const allFeedback = await db.feedback.findMany({
+      where: status ? { status } : undefined,
+      orderBy: { [sortBy]: sortOrder },
     });
+
+    // Calculate pagination
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedFeedback = allFeedback.slice(startIndex, endIndex);
+
+    return {
+      feedback: paginatedFeedback,
+      total: allFeedback.length,
+      page,
+      pageSize,
+    };
   } catch (error) {
     console.error('Error fetching feedback:', error);
-    return [];
+    return {
+      feedback: [],
+      total: 0,
+      page,
+      pageSize,
+    };
   }
 }
 

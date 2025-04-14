@@ -9,8 +9,87 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { FeedbackCategoryEnum, FeedbackStatusEnum } from '@/types/feedback';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useState } from 'react';
+import { createFeedback } from '@/lib/api-client';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/components/ui/use-toast';
+
+const feedbackFormSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(100, 'Title is too long'),
+  description: z
+    .string()
+    .min(1, 'Description is required')
+    .max(1000, 'Description is too long'),
+  category: z.enum([
+    FeedbackCategoryEnum.Bug,
+    FeedbackCategoryEnum.Feature,
+    FeedbackCategoryEnum.Improvement,
+    FeedbackCategoryEnum.Documentation,
+    FeedbackCategoryEnum.Other,
+  ] as const),
+  status: z.enum([
+    FeedbackStatusEnum.Open,
+    FeedbackStatusEnum.InProgress,
+    FeedbackStatusEnum.Closed,
+  ] as const),
+});
+
+type FeedbackFormValues = z.infer<typeof feedbackFormSchema>;
 
 export default function SubmitFeedbackPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
+  const form = useForm<FeedbackFormValues>({
+    resolver: zodResolver(feedbackFormSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+      category: FeedbackCategoryEnum.Feature,
+      status: FeedbackStatusEnum.Open,
+    },
+  });
+
+  const onSubmit = async (data: FeedbackFormValues) => {
+    try {
+      setIsSubmitting(true);
+
+      await createFeedback(data);
+
+      router.push('/'); // avoid page refresh and is faster, and maintain the same app state
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to submit feedback. Please try again later.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="container max-w-2xl py-8">
       <Card>
@@ -18,25 +97,110 @@ export default function SubmitFeedbackPage() {
           <CardTitle>Submit Feedback</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* 
-            TODO: Implement feedback submission form
-            - Create a form with title, description, category, and status fields
-            - Use react-hook-form or similar for form state management
-            - Implement client-side validation with Zod
-            - Show validation errors inline
-            - Handle form submission to the API
-            - Implement loading state during submission
-          */}
-          <div className="text-muted-foreground">
-            Form implementation needed
-          </div>
+          <Form {...form}>
+            <form
+              id="feedback-form"
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4"
+            >
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter feedback title" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Describe your feedback in detail"
+                        className="min-h-[100px]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.values(FeedbackCategoryEnum).map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.values(FeedbackStatusEnum)
+                          .filter((status) => status !== FeedbackStatusEnum.All)
+                          .map((status) => (
+                            <SelectItem key={status} value={status}>
+                              {status}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </form>
+          </Form>
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button variant="outline" asChild>
             <Link href="/">Cancel</Link>
           </Button>
-          <Button type="submit" form="feedback-form">
-            Submit Feedback
+          <Button type="submit" form="feedback-form" disabled={isSubmitting}>
+            {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
           </Button>
         </CardFooter>
       </Card>

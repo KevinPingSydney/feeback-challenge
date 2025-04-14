@@ -22,7 +22,7 @@ export default async function FeedbackList() {
 
   return (
     <div className="space-y-4">
-      {feedbackItems.map((item) => (
+      {feedbackItems.feedback.map((item) => (
         <FeedbackItem key={item.id} feedback={item} />
       ))}
     </div>
