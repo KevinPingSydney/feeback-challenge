@@ -1,60 +1,109 @@
-# Product Feedback Portal - Take Home Challenge
+# Product Feedback Portal - Implementation Approach
 
-This repo contains multiple TODOs to test the candidate's competence across various areas expected of a fullstack developer.
-The goal is to implement a product feedback portal where users can submit, view, upvote, and filter feedback items.
+## Overview
 
-## Getting Started
+This document outlines my approach to implementing the Product Feedback Portal, focusing on creating a performant, robust, type-safe application using Next.js, TypeScript, and modern React patterns.
 
-1. Clone this repository
-2. Install dependencies: You can use whichever package manager you like `npm`, `yarn`, `pnpm`, `bun` etc
-3. Run the development server: `npm run dev` or equivalent command
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+### Decisions
 
-## Challenge Requirements
+1. **State Management Split**:
 
-This challenge is designed to test your skills in:
+   - Server State: SWR for data fetching and caching
+   - Local State: React Context for UI state (filters, etc.)
+   - Form State: React Hook Form
 
-- TypeScript
-- React
-- Next.js (App Router)
-- API design
-- State management
-- Form handling
-- Performance optimization
+2. **Type Safety**:
 
-## Tasks
+   - Zod schemas for runtime validation
+   - Strict TypeScript configuration
 
-Look for `TODO` comments throughout the codebase. These indicate areas where you need to implement functionality. The main tasks include:
+3. **Performance Optimizations**:
+   - Optimistic UI updates for better UX
+   - Proper data caching with SWR
+   - Component memoization where beneficial
 
-1. Implementing the feedback submission form with validation
-2. Adding status filtering functionality
-3. Implementing upvote functionality with optimistic UI updates
-4. Completing the API routes with proper validation and error handling
-5. Implementing data fetching with SWR or React Query
-6. Adding proper TypeScript types throughout the application
+## Implementation Approach
 
-## Evaluation Criteria
+### 1. Feedback Submission Form
 
-Your submission will be evaluated based on:
+- Implement form using React Hook Form
+- Add Zod validation schema for:
+  - Title (required, min/max length)
+  - Description (required, min/max length)
+  - Category (enum validation)
+- Add error handling and loading states
+- Implement client-side validation
+- Add success/error notifications
 
-- Code quality and organization
-- TypeScript usage and type safety
-- Component design and reusability
-- State management approach
-- API design and error handling
-- Performance considerations
-- Attention to detail
+### 2. Status Filtering
 
-## Time Expectation
+- Implement as URL-based filters for shareable links
+- Use URL search params for persistence instead of Context to preserve status while navigating pages
+- Add filter components with proper TypeScript types
+- Ensure filters work with SSR
+- Optimize re-renders using useMemo/useCallback
 
-This challenge is designed to be completed in approximately 4 hours. Focus on demonstrating your skills rather than completing every single TODO item.
+### 3. Upvote Functionality
 
-## Submission
+- Implement optimistic updates for instant feedback
+- Add rollback mechanism for failed requests
+- Use SWR's mutate for cache updates
+- Implement proper error handling
+- Add rate limiting on the API side
 
-When you're finished, please:
+### 5. Data Fetching Strategy
 
-1. Push your code to a private repository
-2. Share the repository with us
-3. Include a brief README explaining your approach and any decisions you made
+- Implement SWR hooks for data fetching
+- Add proper loading states
+- Implement error boundaries
+- Optimize cache invalidation
 
-Good luck!
+To be improved further
+
+- Sometimes directly call NextJS URL to fetch data instead of via api-client.ts because of time constraint. This needs to be refactored to go via api-client.ts for loose-coupling and easy maintainabilty best practice
+
+### 6. Funcationality Progress
+
+#### Implemented
+
+- Create Feedback
+- Upvote in Feedback list page
+- Upvote in Feedback item details page
+- Filter by Feedback status
+- Preserve Feedback status while navigating to Feedback creation page and go back
+- Preserve Feedback status while navigating to Feedback item details page and go back
+- useFeedback hook
+- Feedback data creation
+
+#### To be implemented
+
+- Technically, Update and Delete of Feedback as it is very similar to the Create of Feedback.
+- api-client.ts
+
+## Future Improvements
+
+1. Fix the legacy dependency issue when run npm install
+2. Use api-client.ts instead of calling data layer URL directly to match the best practice of loose-coupling
+3. Implement the Update and Delete Feedbacks
+4. Add comprehensive test coverage
+5. Improve error handling and logging
+6. Add analytics tracking
+7. Further improve code quality, which is not maxmised because of time constrain
+8. Add user authentication
+
+## Out of scope
+
+For this coding chanllenge, the followings are out of scope for time constrain
+
+- Rate limiting
+- Unit testing
+- Retry logic
+- Scalability
+
+However, I still did manual and POSTMAN request testing.
+
+## Conclusion
+
+This implementation focuses on creating a performant, maintainable, type-safe feedback portal while adhering to React and TypeScript best practices. The approach prioritizes user experience through optimistic updates and proper error handling.
+
+# Many thanks for reviewing the code.
